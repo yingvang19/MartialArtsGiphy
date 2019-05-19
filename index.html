@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Martial Arts Giphy</title>
+  <link rel="stylesheet" href="../GifTastic/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+  <h1>Martial Arts Giphy</h1>
+  <div id="buttons-appear"></div>
+
+  <form id="search-form">
+    <label for="search-input">Search Your Art of Fighting!</label>
+    <br>
+    <input type="text" id="search-input">
+    <br>
+    <input id="add-search" type="submit" value="Add Your Search!">
+  </form>
+
+  <div id="gifs-appear-here">
+  </div>
+
+  <script type="text/javascript">
+    var topics = ["taekwondo", "karate", "boxing", "judo", "kung fu", "muay thai", "wing chun", "tai chi", "Jeet Kune Do", "one inch punch"];
+
+    function renderButtons() {
+      $("#buttons-appear").empty();
+
+      for (var i = 0; i < topics.length; i++) {
+        var addBtn = $("<button>");
+        addBtn.addClass("martial-arts");
+        addBtn.attr("data-name", topics[i]);
+        addBtn.text(topics[i]);
+      
+        $("#buttons-appear").append(addBtn);
+      }
+    }  
+    renderButtons();
+
+  
+    $("#add-search").on("click", function () {
+      event.preventDefault();
+      var search = $("#search-input").val().trim();
+      topics.push(search);
+      renderButtons();
+      
+    });
+
+   
+    $(document).on("click", ".martial-arts", function () {
+      var martialArts = $(this).attr("data-name");
+
+      var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+        martialArts + "&api_key=4hDdwvisjRbXdoQuYOv0Xxqi3CJNKTgc&limit=10";
+
+      $.ajax({
+        url: queryURL,
+        method: "GET"
+      }).then(function (response) {
+      
+          var results = response.data;
+
+          $('#gifs-appear-here').empty();
+        
+          for (var i = 0; i < results.length; i++) {
+
+            var pictureDiv = $('<span>');
+            var pictureDisplay = results[i].images.fixed_height.url;
+            var still = results[i].images.fixed_height_still.url;
+
+            var giphyPicture = $('<img>')
+              .attr("src", still)
+              .attr('data-animate', pictureDisplay)
+              .attr('data-still', still);
+
+            giphyPicture.attr('data-state', 'still');
+            $('#gifs-appear-here').prepend(giphyPicture);
+            giphyPicture.on('click', pausePlay);
+
+            var rating = results[i].rating;
+            var displayRated = $('<p>').text("Rating: " + rating);
+            $('#gifs-appear-here').prepend(displayRated);
+          }
+        });
+      function pausePlay() {
+        var state = $(this).attr('data-state');
+
+        if (state == 'still') {
+          $(this).attr('src', $(this).data('animate'));
+          $(this).attr('data-state', 'animate');
+        } else {
+          $(this).attr('src', $(this).data('still'));
+          $(this).attr('data-state', 'still');
+        }
+
+      } 
+    });
+  </script>
+</body>
+
+</html>
